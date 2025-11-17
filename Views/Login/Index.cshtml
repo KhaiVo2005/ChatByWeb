@@ -1,0 +1,18 @@
+﻿@{
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+    ViewBag.Title = "Login";
+}
+
+<form method="post">
+    <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input name="username" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input name="password" type="password" class="form-control" />
+    </div>
+
+    <button class="btn btn-primary w-100">Đăng nhập</button>
+</form>

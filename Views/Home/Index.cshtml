@@ -1,0 +1,112 @@
+﻿@model List<ChatByWeb.Models.ConversationModel>
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    var userId = HttpContextAccessor.HttpContext?.Session.GetString("user_id") ?? "";
+    var token = HttpContextAccessor.HttpContext?.Session.GetString("access_token") ?? "";
+}
+
+<div class="row" style="height: calc(100vh - 56px);">
+    <!-- Conversation list -->
+    <div class="col-3 bg-white border-end p-3 overflow-auto" style="max-width: 320px;">
+        <h5>Conversations</h5>
+        <ul class="list-group mb-3" id="conversationList">
+            @foreach (var conv in Model)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        @if (conv.IsDirect)
+                        {
+                            var otherUser = conv.Members.FirstOrDefault(m => m != userId);
+                            @otherUser
+                        }
+                        else
+                        {
+                            @conv.Title
+                        }
+                    </span>
+                    <button class="btn btn-sm btn-outline-primary openChatBtn" data-id="@conv.Id">Open</button>
+                </li>
+            }
+        </ul>
+
+        <hr />
+        <!-- Form tạo conversation -->
+        <form id="createConversationForm" method="post" asp-action="CreateConversation">
+            <div class="mb-2">
+                <input type="text" id="otherUsersInput" name="otherUsers" class="form-control form-control-sm"
+                       placeholder="Nhập user id khác, cách nhau bằng dấu , (ví dụ: khai,khai2)" required />
+            </div>
+            <div class="mb-2" id="groupTitleWrapper" style="display:none;">
+                <input type="text" name="groupTitle" class="form-control form-control-sm"
+                       placeholder="Tên nhóm (chỉ dùng nếu nhiều user)" />
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary w-100">Tạo cuộc trò chuyện mới</button>
+        </form>
+    </div>
+
+    <!-- Chat container -->
+    <div class="col p-0 d-flex flex-column" id="chatContainer" style="background-color: #f0f2f5;">
+        <h5 class="p-2 bg-light border-bottom" id="chatTitle">Chọn một conversation</h5>
+        <div id="chatPartialWrapper" class="flex-grow-1 overflow-auto d-flex flex-column p-3">
+            <p class="text-center mt-3">Chọn một conversation để bắt đầu chat</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="module">
+        import { initChat } from "/js/conversation.js";
+
+        const chatWrapper = document.getElementById("chatPartialWrapper");
+        const chatTitle = document.getElementById("chatTitle");
+        const userId = "@userId";
+        const token = "@token";
+
+        let currentSocket = null;
+
+        // Hiển thị input tên nhóm nếu >1 user
+        const otherUsersInput = document.getElementById("otherUsersInput");
+        const groupTitleWrapper = document.getElementById("groupTitleWrapper");
+        otherUsersInput.addEventListener("input", () => {
+            const users = otherUsersInput.value.split(',')
+                               .map(u => u.trim())
+                               .filter(u => u.length > 0);
+            groupTitleWrapper.style.display = users.length > 1 ? "block" : "none";
+        });
+
+        // Mở conversation
+        document.querySelectorAll(".openChatBtn").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const convId = btn.dataset.id;
+                chatTitle.textContent = btn.parentElement.querySelector("span").textContent;
+
+                const res = await fetch(`/Home/ChatPartial/${convId}`);
+                chatWrapper.innerHTML = await res.text();
+
+                if(currentSocket) currentSocket.close();
+                currentSocket = initChat(token, convId, userId);
+
+                const sendBtn = document.getElementById("sendBtn");
+                const msgInput = document.getElementById("msgInput");
+
+                sendBtn.addEventListener("click", async () => {
+                    const content = msgInput.value.trim();
+                    if(!content) return;
+
+                    await fetch("http://localhost:8081/api/chat/messages/send", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            conversationId: convId,
+                            senderId: userId,
+                            content
+                        })
+                    });
+
+                    msgInput.value = "";
+                });
+            });
+        });
+    </script>
+}
