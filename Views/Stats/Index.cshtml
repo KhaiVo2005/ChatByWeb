@@ -13,7 +13,7 @@
 <hr />
 
 <h3>Summary</h3>
-<ul>
+<ul style="font-size: 0.9rem; padding-left: 15px;">
     <li><b>Tổng tin nhắn:</b> @summary.TotalMessages</li>
     <li><b>Tổng dung lượng:</b> @summary.TotalStorageBytes bytes</li>
     <li><b>Tổng cuộc trò chuyện:</b> @summary.TotalConversations</li>
@@ -22,12 +22,12 @@
 <hr />
 
 <h3>User Daily Messages</h3>
-<canvas id="userChart" height="150"></canvas>
+<canvas id="userChart" height="100"></canvas> <!-- giảm chiều cao -->
 
 <hr />
 
 <h3>Daily Summary</h3>
-<canvas id="dailySummaryChart" height="150"></canvas>
+<canvas id="dailySummaryChart" height="100"></canvas> <!-- giảm chiều cao -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -51,8 +51,14 @@
         },
         options: {
             responsive: true,
-            plugins: { legend: { display: true } },
-            scales: { y: { beginAtZero: true } }
+            plugins: {
+                legend: { display: false }, // ẩn legend để gọn
+                tooltip: { enabled: true }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                x: { ticks: { maxRotation: 45, minRotation: 0, font: { size: 10 } } }
+            }
         }
     });
 
@@ -80,22 +86,23 @@
         options: {
             responsive: true,
             plugins: {
-                legend: { display: true },
+                legend: { display: false }, // ẩn legend để gọn
                 datalabels: {
                     display: true,
                     align: 'end',
                     anchor: 'end',
+                    font: { size: 10, weight: 'bold' },
+                    color: '#333',
                     formatter: function(value, context) {
-                        if(context.datasetIndex === 1) {
-                            return `Files: ${value}`;
-                        }
+                        if(context.datasetIndex === 1) return `Files: ${value}`;
                         return null;
-                    },
-                    font: { weight: 'bold' },
-                    color: '#333'
+                    }
                 }
             },
-            scales: { y: { beginAtZero: true } }
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
+                x: { ticks: { maxRotation: 45, minRotation: 0, font: { size: 10 } } }
+            }
         },
         plugins: [ChartDataLabels]
     });
