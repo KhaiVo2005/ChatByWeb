@@ -1,6 +1,7 @@
 wwwroot\css\site.css
 wwwroot\favicon.ico
 wwwroot\js\conversation.js
+wwwroot\js\guidToUser.js
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
@@ -137,3 +138,4 @@ C:\Project\BigData\Project\ChatByWeb\wwwroot\lib\bootstrap\dist\css\bootstrap-th
 C:\Project\BigData\Project\ChatByWeb\wwwroot\lib\bootstrap\dist\css\bootstrap-theme.min.css.map
 C:\Project\BigData\Project\ChatByWeb\wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.js
 C:\Project\BigData\Project\ChatByWeb\wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.min.js
+C:\Project\BigData\Project\ChatByWeb\wwwroot\js\guidToUser.js

@@ -23,6 +23,9 @@ builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<WebSocketChatClient>();
 
+builder.Services.AddScoped<KeycloakAuthService>();
+builder.Services.AddScoped<IAuthService>(sp => sp.GetRequiredService<KeycloakAuthService>());
+
 // Đăng ký IHttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
@@ -67,5 +70,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Login}/{action=Index}/{id?}"
 );
+
+app.MapControllers();
 
 app.Run();

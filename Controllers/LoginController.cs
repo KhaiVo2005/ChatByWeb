@@ -36,9 +36,14 @@ namespace ChatByWeb.Controllers
                 return View();
             }
 
-            // ✔ Dùng username làm user_id luôn
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token.access_token);
+            var userGuid = jwt.Subject;
+
+            // Dùng username làm user_id luôn
             HttpContext.Session.SetString("user_id", username);
             HttpContext.Session.SetString("access_token", token.access_token);
+            HttpContext.Session.SetString("guid", userGuid);
 
             return RedirectToAction("Index", "Home");
         }

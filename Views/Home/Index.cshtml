@@ -4,21 +4,27 @@
 @{
     var userId = HttpContextAccessor.HttpContext?.Session.GetString("user_id") ?? "";
     var token = HttpContextAccessor.HttpContext?.Session.GetString("access_token") ?? "";
+    var guid = HttpContextAccessor.HttpContext?.Session.GetString("guid") ?? "";
 }
 
 <div class="row" style="height: calc(100vh - 56px);">
     <!-- Conversation list -->
     <div class="col-3 bg-white border-end p-3 overflow-auto" style="max-width: 320px;">
         <h5>Conversations</h5>
+
+        <a href="/Stats/Index" class="btn btn-sm btn-warning mb-3 w-100">
+            Thống kê
+        </a>
+
         <ul class="list-group mb-3" id="conversationList">
             @foreach (var conv in Model)
             {
+                var otherUser = conv.IsDirect ? conv.Members.FirstOrDefault(m => m != guid) : null;
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>
+                    <span class="conv-display">
                         @if (conv.IsDirect)
                         {
-                            var otherUser = conv.Members.FirstOrDefault(m => m != userId);
-                            @otherUser
+                            <span class="conv-user" data-guid="@otherUser">Loading...</span>
                         }
                         else
                         {
@@ -31,25 +37,37 @@
         </ul>
 
         <hr />
-        <!-- Form tạo conversation -->
+
+        <!-- Create conversation -->
         <form id="createConversationForm" method="post" asp-action="CreateConversation">
             <div class="mb-2">
-                <input type="text" id="otherUsersInput" name="otherUsers" class="form-control form-control-sm"
-                       placeholder="Nhập user id khác, cách nhau bằng dấu , (ví dụ: khai,khai2)" required />
+                <input type="text" id="otherUsersInput" name="otherUsers"
+                       class="form-control form-control-sm"
+                       placeholder="Nhập user id khác, ví dụ: khai,khai2" required />
             </div>
+
             <div class="mb-2" id="groupTitleWrapper" style="display:none;">
                 <input type="text" name="groupTitle" class="form-control form-control-sm"
-                       placeholder="Tên nhóm (chỉ dùng nếu nhiều user)" />
+                       placeholder="Tên nhóm (dành cho nhiều user)" />
             </div>
-            <button type="submit" class="btn btn-sm btn-primary w-100">Tạo cuộc trò chuyện mới</button>
+
+            <button type="submit" class="btn btn-sm btn-primary w-100">
+                Tạo cuộc trò chuyện mới
+            </button>
         </form>
     </div>
 
     <!-- Chat container -->
     <div class="col p-0 d-flex flex-column" id="chatContainer" style="background-color: #f0f2f5;">
-        <h5 class="p-2 bg-light border-bottom" id="chatTitle">Chọn một conversation</h5>
-        <div id="chatPartialWrapper" class="flex-grow-1 overflow-auto d-flex flex-column p-3">
-            <p class="text-center mt-3">Chọn một conversation để bắt đầu chat</p>
+        <h5 class="p-2 bg-light border-bottom" id="chatTitle">
+            Chọn một conversation
+        </h5>
+
+        <div id="chatPartialWrapper"
+             class="flex-grow-1 overflow-auto d-flex flex-column p-3">
+            <p class="text-center mt-3">
+                Chọn một conversation để bắt đầu chat
+            </p>
         </div>
     </div>
 </div>
@@ -57,6 +75,7 @@
 @section Scripts {
     <script type="module">
         import { initChat } from "/js/conversation.js";
+        import { mapGuidsToUsernames } from "/js/guidToUser.js";
 
         const chatWrapper = document.getElementById("chatPartialWrapper");
         const chatTitle = document.getElementById("chatTitle");
@@ -64,49 +83,169 @@
         const token = "@token";
 
         let currentSocket = null;
+        const CONV_BASE = "@ViewBag.ConversationBaseUrl";
+        const MSG_BASE  = "@ViewBag.MessageBaseUrl";
 
-        // Hiển thị input tên nhóm nếu >1 user
+        // 1) MAP DIRECT USER GUID → USERNAME
+        document.addEventListener("DOMContentLoaded", async () => {
+            const spans = document.querySelectorAll(".conv-user");
+            if (spans.length === 0) return;
+            const guids = [...new Set([...spans].map(s => s.dataset.guid))];
+            const map = await mapGuidsToUsernames(guids);
+
+            spans.forEach(span => {
+                const g = span.dataset.guid;
+                span.textContent = map[g] || g;
+            });
+        });
+
+
+        // 2) SHOW/HIDE GROUP TITLE INPUT
         const otherUsersInput = document.getElementById("otherUsersInput");
         const groupTitleWrapper = document.getElementById("groupTitleWrapper");
+
         otherUsersInput.addEventListener("input", () => {
             const users = otherUsersInput.value.split(',')
-                               .map(u => u.trim())
-                               .filter(u => u.length > 0);
+                          .map(u => u.trim())
+                          .filter(u => u.length > 0);
             groupTitleWrapper.style.display = users.length > 1 ? "block" : "none";
         });
 
-        // Mở conversation
+
+        // 3) OPEN CONVERSATION
         document.querySelectorAll(".openChatBtn").forEach(btn => {
             btn.addEventListener("click", async () => {
                 const convId = btn.dataset.id;
-                chatTitle.textContent = btn.parentElement.querySelector("span").textContent;
+                chatTitle.textContent = btn.parentElement
+                                         .querySelector(".conv-display").textContent.trim();
 
+                // Load chat partial
                 const res = await fetch(`/Home/ChatPartial/${convId}`);
                 chatWrapper.innerHTML = await res.text();
 
-                if(currentSocket) currentSocket.close();
+                // Init WebSocket
+                if (currentSocket) currentSocket.close();
                 currentSocket = initChat(token, convId, userId);
 
-                const sendBtn = document.getElementById("sendBtn");
-                const msgInput = document.getElementById("msgInput");
+                // Load messages
+                const chatBox = chatWrapper.querySelector("#chatBox");
+                await loadMessages(convId, chatBox);
 
-                sendBtn.addEventListener("click", async () => {
+                // Send message
+                const sendBtn = chatWrapper.querySelector("#sendBtn");
+                const msgInput = chatWrapper.querySelector("#msgInput");
+
+                sendBtn.onclick = async () => {
                     const content = msgInput.value.trim();
-                    if(!content) return;
+                    if (!content) return;
 
-                    await fetch("http://localhost:8081/api/chat/messages/send", {
+                    await fetch(`${MSG_BASE}/send`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer " + token
+                        },
                         body: JSON.stringify({
                             conversationId: convId,
-                            senderId: userId,
                             content
                         })
                     });
 
                     msgInput.value = "";
-                });
+                };
+
+                // Search message
+                const searchBtn = chatWrapper.querySelector("#searchBtn");
+                const searchInput = chatWrapper.querySelector("#searchInput");
+                searchBtn.onclick = async () => {
+                    const term = searchInput.value.trim();
+                    chatBox.innerHTML = `<p class="text-center mt-3">Đang tìm kiếm...</p>`;
+
+                    let messages;
+                    if (!term) {
+                        await loadMessages(convId, chatBox);
+                        return;
+                    } else {
+                        const res = await fetch(`http://localhost:8081/api/search?term=${encodeURIComponent(term)}&conversationId=${convId}`, {
+                            headers: { "Authorization": "Bearer " + token }
+                        });
+                        messages = await res.json();
+                    }
+
+                    chatBox.innerHTML = "";
+                    if (messages.length === 0) {
+                        chatBox.innerHTML = `<p class="text-center mt-3">Không tìm thấy kết quả</p>`;
+                    } else {
+                        const guids = [...new Set(messages.map(m => m.senderId))];
+                        const guidToUsername = await mapGuidsToUsernames(guids);
+                        messages.forEach(m => {
+                            m.senderId = guidToUsername[m.senderId] || m.senderId;
+                            appendMessage(m, chatBox);
+                        });
+                    }
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                };
             });
         });
+
+
+        // 4) LOAD MESSAGES (MAP GUID → USERNAME)
+        async function loadMessages(convId, chatBox) {
+            const res = await fetch(`${CONV_BASE}/${convId}/messages?skip=0&take=50`, {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+
+                let messages = await res.json();
+
+                if (messages.length === 0) {
+                    chatBox.innerHTML = `<p class="text-center mt-3">Chưa có tin nhắn nào</p>`;
+                    return;
+            }
+
+            const guids = [...new Set(messages.map(m => m.senderId))];
+            const map = await mapGuidsToUsernames(guids);
+
+            chatBox.innerHTML = "";
+
+            messages.forEach(m => {
+                m.senderId = map[m.senderId] || m.senderId;
+                appendMessage(m, chatBox);
+            });
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+
+        /* -------------------------------
+           5) APPEND MESSAGE BUBBLE
+           ------------------------------- */
+        function appendMessage(m, chatBox) {
+            const isMe = m.senderId === userId;
+
+            const wrapper = document.createElement("div");
+            wrapper.style.display = "flex";
+            wrapper.style.flexDirection = "column";
+            wrapper.style.alignItems = isMe ? "flex-end" : "flex-start";
+            wrapper.style.marginBottom = "10px";
+
+            const senderLabel = document.createElement("div");
+            senderLabel.style.fontSize = "12px";
+            senderLabel.style.fontWeight = "bold";
+            senderLabel.style.marginBottom = "3px";
+            senderLabel.style.color = isMe ? "#0d6efd" : "#333";
+            senderLabel.textContent = isMe ? "You" : m.senderId;
+            wrapper.appendChild(senderLabel);
+
+            const bubble = document.createElement("div");
+            bubble.classList.add("p-2", "rounded");
+            bubble.style.maxWidth = "70%";
+            bubble.style.backgroundColor = isMe ? "#0d6efd" : "#e4e6eb";
+            bubble.style.color = isMe ? "white" : "black";
+            bubble.textContent = m.content;
+            wrapper.appendChild(bubble);
+
+            chatBox.appendChild(wrapper);
+        }
+
     </script>
 }

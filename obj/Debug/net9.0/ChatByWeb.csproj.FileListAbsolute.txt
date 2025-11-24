@@ -394,4 +394,6 @@ C:\Project\BigData\Project\ChatByWeb\obj\Debug\net9.0\compressed\9ex3hni2cm-hncd
 C:\Project\BigData\Project\ChatByWeb\obj\Debug\net9.0\compressed\j10k7048ip-kfyfhdxh97.gz
 C:\Project\BigData\Project\ChatByWeb\obj\Debug\net9.0\compressed\hbkr3hwrqs-0z1um1b29w.gz
 C:\Project\BigData\Project\ChatByWeb\obj\Debug\net9.0\compressed\6951ox43k1-aoyfsirkoh.gz
-C:\Project\BigData\Project\ChatByWeb\obj\Debug\net9.0\compressed\5lgtukgwmy-xkkhtxkidr.gz
+C:\Project\BigData\Project\ChatByWeb\obj\Debug\net9.0\ChatByWeb.sourcelink.json
+C:\Project\BigData\Project\ChatByWeb\obj\Debug\net9.0\compressed\naei7dw66l-nyrukvyr9q.gz
+C:\Project\BigData\Project\ChatByWeb\obj\Debug\net9.0\compressed\5lgtukgwmy-ahk6mnt4r7.gz

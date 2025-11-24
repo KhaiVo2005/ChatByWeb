@@ -1,7 +1,15 @@
 ﻿@model ChatByWeb.Models.ConversationModel
 
+<!-- Search input -->
+<div class="p-2 border-bottom bg-light">
+    <div class="input-group">
+        <input id="searchInput" class="form-control" placeholder="Tìm tin nhắn..." />
+        <button id="searchBtn" class="btn btn-outline-secondary" type="button">Tìm</button>
+    </div>
+</div>
+
 <!-- Chat messages -->
-<div id="chatBox" class="flex-grow-1 p-3 overflow-auto bg-white d-flex flex-column">
+<div id="chatBox" class="p-3 overflow-auto bg-white d-flex flex-column">
 </div>
 
 <!-- Input gửi tin nhắn -->

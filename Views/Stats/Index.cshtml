@@ -1,0 +1,102 @@
+﻿@using ChatByWeb.Models
+@{
+    Layout = "_Layout";
+
+    var userDailyList = (List<UserDailyStats>)ViewBag.UserDailyList;
+    var dailyList = (List<DailyStats>)ViewBag.DailyList;
+    var summary = (SummaryStats)ViewBag.Summary;
+    var dates = (List<string>)ViewBag.Dates;
+}
+
+<h2 class="mb-3">📊 Thống kê hệ thống (7 ngày gần nhất)</h2>
+
+<hr />
+
+<h3>Summary</h3>
+<ul>
+    <li><b>Tổng tin nhắn:</b> @summary.TotalMessages</li>
+    <li><b>Tổng dung lượng:</b> @summary.TotalStorageBytes bytes</li>
+    <li><b>Tổng cuộc trò chuyện:</b> @summary.TotalConversations</li>
+</ul>
+
+<hr />
+
+<h3>User Daily Messages</h3>
+<canvas id="userChart" height="150"></canvas>
+
+<hr />
+
+<h3>Daily Summary</h3>
+<canvas id="dailySummaryChart" height="150"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+    const userDailyList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(userDailyList));
+    const dailyList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dailyList));
+    const dates = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dates));
+
+    new Chart(document.getElementById("userChart"), {
+        type: 'bar',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Messages Sent (User)',
+                data: userDailyList.map(u => u.MessagesSent),
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: true } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    new Chart(document.getElementById("dailySummaryChart"), {
+        type: 'bar',
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Total Messages',
+                    data: dailyList.map(d => d.TotalMessages),
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Total Files',
+                    data: dailyList.map(d => d.TotalFiles),
+                    backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                datalabels: {
+                    display: true,
+                    align: 'end',
+                    anchor: 'end',
+                    formatter: function(value, context) {
+                        if(context.datasetIndex === 1) {
+                            return `Files: ${value}`;
+                        }
+                        return null;
+                    },
+                    font: { weight: 'bold' },
+                    color: '#333'
+                }
+            },
+            scales: { y: { beginAtZero: true } }
+        },
+        plugins: [ChartDataLabels]
+    });
+</script>
