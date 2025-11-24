@@ -180,6 +180,7 @@
                         const guidToUsername = await mapGuidsToUsernames(guids);
                         messages.forEach(m => {
                             m.senderId = guidToUsername[m.senderId] || m.senderId;
+                            console.log(m);
                             appendMessage(m, chatBox);
                         });
                     }
@@ -216,9 +217,6 @@
         }
 
 
-        /* -------------------------------
-           5) APPEND MESSAGE BUBBLE
-           ------------------------------- */
         function appendMessage(m, chatBox) {
             const isMe = m.senderId === userId;
 
@@ -243,6 +241,26 @@
             bubble.style.color = isMe ? "white" : "black";
             bubble.textContent = m.content;
             wrapper.appendChild(bubble);
+
+            // --- Timestamp ---
+            const timestamp = m.sentAt || m.createdAtUtc;
+            if (timestamp) {
+                const timeLabel = document.createElement("div");
+                timeLabel.style.fontSize = "10px";
+                timeLabel.style.color = "#666";
+                timeLabel.style.marginTop = "2px";
+
+                const date = new Date(timestamp);
+                // Format hh:mm dd/mm/yyyy (nếu muốn)
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = date.getFullYear();
+
+                timeLabel.textContent = `${hours}:${minutes} ${day}/${month}/${year}`;
+                wrapper.appendChild(timeLabel);
+            }
 
             chatBox.appendChild(wrapper);
         }

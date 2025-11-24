@@ -1,5 +1,7 @@
 wwwroot\css\site.css
 wwwroot\favicon.ico
+wwwroot\js\conversation.js
+wwwroot\js\guidToUser.js
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
@@ -17,6 +19,10 @@ wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.css.map
 wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-theme.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-theme.css.map
+wwwroot\lib\bootstrap\dist\css\bootstrap-theme.min.css
+wwwroot\lib\bootstrap\dist\css\bootstrap-theme.min.css.map
 wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.css.map
 wwwroot\lib\bootstrap\dist\css\bootstrap-utilities.min.css
@@ -48,6 +54,8 @@ wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map
 wwwroot\lib\bootstrap\LICENSE
 wwwroot\lib\jquery-validation-unobtrusive\dist\jquery.validate.unobtrusive.js
 wwwroot\lib\jquery-validation-unobtrusive\dist\jquery.validate.unobtrusive.min.js
+wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.js
+wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.min.js
 wwwroot\lib\jquery-validation-unobtrusive\LICENSE.txt
 wwwroot\lib\jquery-validation\dist\additional-methods.js
 wwwroot\lib\jquery-validation\dist\additional-methods.min.js
@@ -61,14 +69,6 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\lib\bootstrap\dist\css\bootstrap-theme.css
-wwwroot\lib\bootstrap\dist\css\bootstrap-theme.css.map
-wwwroot\lib\bootstrap\dist\css\bootstrap-theme.min.css
-wwwroot\lib\bootstrap\dist\css\bootstrap-theme.min.css.map
-wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.js
-wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.min.js
-wwwroot\js\conversation.js
-wwwroot\js\guidToUser.js
 C:\Project\BigData\Project\ChatByWeb\wwwroot\css\site.css
 C:\Project\BigData\Project\ChatByWeb\wwwroot\favicon.ico
 C:\Project\BigData\Project\ChatByWeb\wwwroot\js\site.js

@@ -35,6 +35,16 @@ export function initChat(token, conversationId, currentUserId) {
         bubble.textContent = messageData.content;
         wrapper.appendChild(bubble);
 
+        // --- Timestamp ---
+        if (messageData.sentAt) { // đảm bảo có trường thời gian
+            const timeLabel = document.createElement("div");
+            timeLabel.style.fontSize = "10px";
+            timeLabel.style.color = "#666";
+            timeLabel.style.marginTop = "2px";
+            timeLabel.textContent = new Date(messageData.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            wrapper.appendChild(timeLabel);
+        }
+
         chatBox.appendChild(wrapper);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
